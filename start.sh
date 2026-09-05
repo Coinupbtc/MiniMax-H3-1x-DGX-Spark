@@ -7,6 +7,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RECIPE="${H3_1X_RECIPE:-$(cd "$ROOT/.." && pwd)/MiniMax-H3-DGX-Spark}"
 IMAGE="${H3_1X_IMAGE:-minimax-h3-dgx-spark:sm121-fp8}"
 SPARK2="${SPARK2:-spark2}"
+OVERRIDE="$ROOT/compose.quality.yaml"
+export H3_START_FP8="${H3_START_FP8:-$RECIPE/start-fp8.sh}"
+[[ -x "$H3_START_FP8" ]] || { echo "missing $H3_START_FP8" >&2; exit 1; }
+[[ -f "$OVERRIDE" ]] || { echo "missing $OVERRIDE" >&2; exit 1; }
+compose_up() {
+  # Mount host start-fp8.sh over the baked TORCH_SDPA entrypoint.
+  docker compose -f compose.yaml -f "$OVERRIDE" up -d --no-build
+}
 NODE="${1:-n1}"
 case "$NODE" in
   n1|1|local) NODE=n1 ;;
@@ -29,7 +37,7 @@ run_local() {
   export H3_BIND_HOST="${H3_BIND_HOST:-127.0.0.1}"
   export H3_ALLOW_REMOTE_API="${H3_ALLOW_REMOTE_API:-false}"
   echo "[h3-tp1] quality CUDNN eager no-cache on this Spark :${H3_API_PORT} (image $IMAGE)"
-  (cd "$RECIPE" && docker compose up -d --no-build)
+  (cd "$RECIPE" && compose_up)
 }
 
 run_n2() {
@@ -37,8 +45,9 @@ run_n2() {
   export H3_ALLOW_REMOTE_API=true
   echo "[h3-tp1] rsync Joey recipe → spark2, then quality start"
   rsync -a --exclude output --exclude .git "$RECIPE/" "spark2:$RECIPE/"
+  rsync -a "$OVERRIDE" "spark2:$OVERRIDE"
   ssh -o BatchMode=yes -o ConnectTimeout=20 "$SPARK2" \
-    "export H3_DIFFUSION_ATTENTION_BACKEND=CUDNN_ATTN H3_EXECUTION_MODE=eager H3_CACHE_BACKEND=none H3_CACHE_CONFIG= H3_API_PORT=${H3_API_PORT} H3_BIND_HOST=0.0.0.0 H3_ALLOW_REMOTE_API=true H3_VIDEO_SYNC_TIMEOUT=${H3_VIDEO_SYNC_TIMEOUT}; cd '$RECIPE' && docker compose up -d --no-build"
+    "export H3_START_FP8='$H3_START_FP8' H3_DIFFUSION_ATTENTION_BACKEND=CUDNN_ATTN H3_EXECUTION_MODE=eager H3_CACHE_BACKEND=none H3_CACHE_CONFIG= H3_API_PORT=${H3_API_PORT} H3_BIND_HOST=0.0.0.0 H3_ALLOW_REMOTE_API=true H3_VIDEO_SYNC_TIMEOUT=${H3_VIDEO_SYNC_TIMEOUT}; cd '$RECIPE' && docker compose -f compose.yaml -f '$OVERRIDE' up -d --no-build"
 }
 
 if [[ "$NODE" == n1 ]]; then

@@ -1,0 +1,7 @@
+# Overlay on Joey compose.yaml. The published sm121-fp8 image bakes
+# start-minimax-h3 with TORCH_SDPA and ignores H3_* quality env.
+# Host start-fp8.sh honors CUDNN_ATTN / eager / cache_dit.
+services:
+  minimax-h3:
+    volumes:
+      - ${H3_START_FP8:?set H3_START_FP8 to Joey start-fp8.sh}:/usr/local/bin/start-minimax-h3:ro

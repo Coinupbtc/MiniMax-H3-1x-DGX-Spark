@@ -1,5 +1,6 @@
 .env
 output/
+results/
 *.mp4
 *.png
 __pycache__/

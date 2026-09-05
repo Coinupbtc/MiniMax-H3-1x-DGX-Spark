@@ -14,20 +14,23 @@ SHA: `2d5e3d38e12f23b0cab480fcc28abdbbf4c7defbd36f90f41330ba3386888604`
 Compile (Joey’s one-Spark “full-compute” default) and Cache-DiT were faster on
 two Sparks and **not** the same picture (SSIM 0.71 and 0.73 vs eager).
 
-This launcher always exports the three knobs above. Joey’s `compose.yaml`
-defaults to `compile`; shell env overrides it.
+## Baked image trap (measured 2026-09-05)
 
-## Expected speed
+The published `minimax-h3-dgx-spark:sm121-fp8` image **ignores** those env vars.
+Its entrypoint hardcodes `--diffusion-attention-backend TORCH_SDPA` (and eager).
+This launcher mounts host `start-fp8.sh` over that entrypoint.
 
-| | Warm client, same clip |
-|---|---:|
-| Two Sparks, RoCE IB, eager, no cache | 55.5 s |
-| One Spark, CUDNN eager, no cache (Joey sweep) | ~132 s |
+## Proof (2026-09-05, same seed-42 clip, one Spark)
 
-TP1 is about 2.4× slower. That is the Ulysses SP=2 win going away, not a quality knob.
+| Run | Time | SHA vs 2× IB eager | SSIM |
+|---|---:|---|---:|
+| TP1 CUDNN eager (this launcher) | **136.1 s** (warmup 139.6 s) | **identical** `2d5e3d38…` | **1.000** |
+| 2× RoCE IB CUDNN eager | 55.5 s | reference | 1.000 |
+| Baked Joey image `TORCH_SDPA` | 162.4 s | different | **0.72** |
+| 2× CUDNN compile (Joey compose default) | 84.8 s | different | **0.71** |
 
-## Proof when you next park TP2
+Warmup SHA on TP1 CUDNN also matched the 2× warmup file (`81bfd70a…`). Video SSIM warmup vs after was 1.0.
 
-Same request as `MiniMax-H3-2x-DGX-Spark/results/quality-speed/`. Compare SHA or
-SSIM against the IB eager file. Do not call Cache-DiT or compile a quality match
-without that number.
+## Speed
+
+TP1 is about **2.45×** slower than 2× IB (136 s vs 55.5 s). That is Ulysses SP=2 going away, not a quality knob.

@@ -16,7 +16,9 @@ Same picture as the two-Spark quality clip. One GPU. Slower.
 | CUDNN compile, no cache | 84.8 s | **no** (SSIM 0.71) |
 | Cache-DiT | 57.8 s | **no** (SSIM 0.73) |
 
-Joey’s stock one-Spark default is **compile**. This wrapper forces **eager + no cache** so TP1 matches that quality SHA, not the faster approximate paths. Expected warm time on one Spark: Joey measured CUDNN eager no-cache at **~132 s** (~2.4× the 55.5 s two-Spark IB clip).
+Joey’s stock compose default is **compile**. The published `sm121-fp8` image also **hardcodes `TORCH_SDPA`**, which ignores quality env and is a different picture (SSIM 0.72). This wrapper mounts Joey’s host `start-fp8.sh` and forces **CUDNN eager + no cache**.
+
+**Proved 2026-09-05:** same seed-42 clip on one Spark, SHA `2d5e3d38…` **identical** to the two-Spark IB quality file (SSIM 1.0). Warm client **136 s** vs 55.5 s on two Sparks.
 
 This repository is a launcher. The image, patch, and compose file live in [Joey Rodriguez’s one-Spark recipe](https://github.com/joeynyc/MiniMax-H3-DGX-Spark). The quality law comes from the [two-Spark GB10 RoCE fork](https://github.com/Coinupbtc/MiniMax-H3-2x-DGX-Spark).
 
