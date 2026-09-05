@@ -1,7 +1,11 @@
 .env
 output/
 results/
+dogfood-output/
 *.mp4
-*.png
 __pycache__/
 .pytest_cache/
+# Allow the README screenshot
+!docs/screenshots/*.png
+!docs/screenshots/*.jpg
+!docs/screenshots/*.webp
