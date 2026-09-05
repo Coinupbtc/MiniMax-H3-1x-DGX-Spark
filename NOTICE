@@ -1,0 +1,14 @@
+MiniMax-H3-1x-DGX-Spark
+Copyright 2026 Coinupbtc
+
+This launcher wraps the one-Spark MiniMax H3 compatibility recipe:
+
+  https://github.com/joeynyc/MiniMax-H3-DGX-Spark
+  Copyright 2026 Joey Rodriguez (Apache-2.0)
+
+The quality default (cuDNN eager, no Cache-DiT) is the profile measured on:
+
+  https://github.com/Coinupbtc/MiniMax-H3-2x-DGX-Spark
+
+MiniMax H3 model weights and outputs are not in this repository. They are
+governed by the MiniMax H3 Community License. See Joey’s MODEL-LICENSE.md.

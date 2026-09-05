@@ -1,0 +1,1 @@
+/home/coinupbtc/Documents/projects/MiniMax-H3-1x-DGX-Spark/start.sh

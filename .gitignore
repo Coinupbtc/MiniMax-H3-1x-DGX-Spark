@@ -1,0 +1,6 @@
+.env
+output/
+*.mp4
+*.png
+__pycache__/
+.pytest_cache/
