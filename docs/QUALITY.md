@@ -20,6 +20,8 @@ The published `minimax-h3-dgx-spark:sm121-fp8` image **ignores** those env vars.
 Its entrypoint hardcodes `--diffusion-attention-backend TORCH_SDPA` (and eager).
 This launcher mounts host `start-fp8.sh` over that entrypoint.
 
+Full SHA table (2× + 1×): [quality-speed.md](quality-speed.md).
+
 ## Proof (2026-09-05, same seed-42 clip, one Spark)
 
 | Run | Time | SHA vs 2× IB eager | SSIM |
